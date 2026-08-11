@@ -8,10 +8,8 @@ import SearchInput from "../components/ui/SearchInput";
 import api from "../lib/axios"; 
 
 const YEAR_OPTIONS = ["All Year", "First Year", "Second Year", "Third Year", "Fourth Year"];
-const SEMESTER_OPTIONS = ["All Sem", "1st Sem", "2nd Sem"];
 const STATUS_OPTIONS = ["To Be Admitted", "All Registered", "Block", "Irregular"];
 const YEAR_MAP = { "First Year": "1", "Second Year": "2", "Third Year": "3", "Fourth Year": "4" };
-const SEMESTER_MAP = { "1st Sem": "1st", "2nd Sem": "2nd" };
 
 function FilterSelect({ label, value, onChange, options }) {
   const active = !value.startsWith("All");
@@ -46,7 +44,6 @@ function StudentList() {
   const [query, setQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("All Year");
   const [selectedSection, setSelectedSection] = useState("All Section");
-  const [selectedSemester, setSelectedSemester] = useState("All Sem");
   const [scheduleMap, setScheduleMap] = useState(new Map());
 
   const isPendingView = selectedStatus === "To Be Admitted";
@@ -56,10 +53,6 @@ function StudentList() {
 
     if (selectedYear !== "All Year") {
       filtered = filtered.filter((student) => String(student.year) === YEAR_MAP[selectedYear]);
-    }
-
-    if (selectedSemester !== "All Sem") {
-      filtered = filtered.filter((student) => String(student.semester) === SEMESTER_MAP[selectedSemester]);
     }
 
     const sections = Array.from(
@@ -73,7 +66,7 @@ function StudentList() {
     });
 
     return ["All Section", ...sections];
-  }, [students, selectedYear, selectedSemester]);
+  }, [students, selectedYear]);
 
   const displayedStudents = useMemo(() => {
     let result = [...students];
@@ -110,10 +103,6 @@ function StudentList() {
       result = result.filter((student) => student.section === selectedSection);
     }
 
-    if (!isPendingView && selectedSemester !== "All Sem") {
-      result = result.filter((student) => String(student.semester) === SEMESTER_MAP[selectedSemester]);
-    }
-
     return result.sort((left, right) => {
       if (isPendingView) {
         return String(left.applicant_number ?? left.applicantID ?? "").localeCompare(
@@ -137,7 +126,7 @@ function StudentList() {
         sensitivity: "base",
       });
     });
-  }, [students, query, selectedYear, selectedSection, selectedSemester, selectedStatus, isPendingView]);
+  }, [students, query, selectedYear, selectedSection, selectedStatus, isPendingView]);
 
   useEffect(() => {
     if (!availableSections.includes(selectedSection)) {
@@ -230,7 +219,7 @@ function StudentList() {
             />
 
             {!isPendingView && (
-              <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3 xl:w-auto">
+              <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 xl:w-auto">
                 <FilterSelect
                   label="Year"
                   value={selectedYear}
@@ -242,12 +231,6 @@ function StudentList() {
                   value={selectedSection}
                   onChange={(event) => setSelectedSection(event.target.value)}
                   options={availableSections}
-                />
-                <FilterSelect
-                  label="Semester"
-                  value={selectedSemester}
-                  onChange={(event) => setSelectedSemester(event.target.value)}
-                  options={SEMESTER_OPTIONS}
                 />
               </div>
             )}

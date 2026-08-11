@@ -326,13 +326,13 @@ export default function CurriculumTable({ onRegularImportSuccess }) {
   const renderTable = (semesterIndex, title) => {
     if (!data?.semesters?.[semesterIndex]) {
       return (
-        <div className="flex-1 w-full min-h-[420px] bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm flex flex-col transition-all duration-200 hover:shadow-md">
-          <div className="bg-gray-50/80 border-b border-gray-100 px-5 py-4">
-            <h3 className="text-gray-800 font-bold text-sm uppercase tracking-widest text-center">
+        <div className="flex-1 min-w-0 w-full min-h-0 h-full bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm flex flex-col transition-all duration-200 hover:shadow-md">
+          <div className="bg-gray-50/80 border-b border-gray-100 px-4 py-3 sm:px-5 sm:py-4">
+            <h3 className="text-center text-xs font-bold uppercase tracking-[0.22em] text-gray-800 sm:text-sm">
               {title}
             </h3>
           </div>
-          <div className="flex-1 flex items-center justify-center p-8">
+          <div className="flex-1 min-h-0 flex items-center justify-center p-8">
             <p className="text-gray-500">No data available</p>
           </div>
         </div>
@@ -343,38 +343,38 @@ export default function CurriculumTable({ onRegularImportSuccess }) {
     const totals = getTotals(semesterData);
 
     return (
-      <div className="flex-1 w-full min-h-[420px] bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm flex flex-col transition-all duration-200 hover:shadow-md">
-        <div className="bg-gray-50/80 border-b border-gray-100 px-5 py-4">
-          <h3 className="text-gray-800 font-bold text-sm uppercase tracking-widest text-center">
+      <div className="flex-1 min-w-0 w-full min-h-0 h-full bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm flex flex-col transition-all duration-200 hover:shadow-md">
+        <div className="bg-gray-50/80 border-b border-gray-100 px-4 py-3 sm:px-5 sm:py-4">
+          <h3 className="text-center text-xs font-bold uppercase tracking-[0.22em] text-gray-800 sm:text-sm">
             {title}
           </h3>
         </div>
 
-        <div className="w-full h-[340px] overflow-y-auto custom-scrollbar flex-1">
-          <table className="w-full min-w-[550px] table-fixed border-collapse text-sm">
+        <div className="w-full flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+          <table className="w-full table-fixed border-collapse text-sm">
             <colgroup>
-              <col className="w-[22%]" />
-              <col className="w-[48%]" />
-              <col className="w-[10%]" />
-              <col className="w-[10%]" />
-              <col className="w-[10%]" />
+              <col className="w-[20%]" />
+              <col className="w-[40%]" />
+              <col className="w-[13.333%]" />
+              <col className="w-[13.333%]" />
+              <col className="w-[13.334%]" />
             </colgroup>
 
             <thead className="bg-[#E4F6E2] text-[#315B46] border-b border-[#BFD9BC]">
               <tr>
-                <th className="font-semibold uppercase py-3 px-4 text-left whitespace-nowrap text-xs tracking-wider">
+                <th className="font-semibold uppercase py-3 px-3 sm:px-4 text-left whitespace-normal text-xs tracking-wider">
                   Code
                 </th>
-                <th className="font-semibold uppercase py-3 px-4 text-left whitespace-nowrap text-xs tracking-wider">
+                <th className="font-semibold uppercase py-3 px-3 sm:px-4 text-left whitespace-normal text-xs tracking-wider">
                   Title
                 </th>
-                <th className="font-semibold uppercase py-3 px-4 text-center whitespace-nowrap text-xs tracking-wider">
+                <th className="font-semibold uppercase py-3 px-2 sm:px-4 text-center whitespace-normal text-xs tracking-wider">
                   Lec
                 </th>
-                <th className="font-semibold uppercase py-3 px-4 text-center whitespace-nowrap text-xs tracking-wider">
+                <th className="font-semibold uppercase py-3 px-2 sm:px-4 text-center whitespace-normal text-xs tracking-wider">
                   Lab
                 </th>
-                <th className="font-semibold uppercase py-3 px-4 text-center whitespace-nowrap text-xs tracking-wider">
+                <th className="font-semibold uppercase py-3 px-2 sm:px-4 text-center whitespace-normal text-xs tracking-wider">
                   Units
                 </th>
               </tr>
@@ -383,19 +383,19 @@ export default function CurriculumTable({ onRegularImportSuccess }) {
             <tbody className="divide-y divide-gray-50">
               {semesterData.map((sub, i) => (
                 <tr key={i} className="hover:bg-gray-50/50 transition-colors group">
-                  <td className="py-3 px-4 text-gray-800 font-medium whitespace-nowrap">
+                  <td className="py-3 px-3 sm:px-4 text-gray-800 font-medium whitespace-normal break-words">
                     {sub.subject_code || sub.code || ""}
                   </td>
-                  <td className="py-3 px-4 text-gray-600 break-words leading-relaxed">
+                  <td className="py-3 px-3 sm:px-4 text-gray-600 break-words leading-relaxed">
                     {sub.title || ""}
                   </td>
-                  <td className="py-3 px-4 text-center text-gray-500 whitespace-nowrap">
+                  <td className="py-3 px-2 sm:px-4 text-center text-gray-500 whitespace-nowrap">
                     {sub.lecture || 0}
                   </td>
-                  <td className="py-3 px-4 text-center text-gray-500 whitespace-nowrap">
+                  <td className="py-3 px-2 sm:px-4 text-center text-gray-500 whitespace-nowrap">
                     {sub.laboratory || 0}
                   </td>
-                  <td className="py-3 px-4 text-center text-gray-900 font-semibold whitespace-nowrap">
+                  <td className="py-3 px-2 sm:px-4 text-center text-gray-900 font-semibold whitespace-nowrap">
                     {sub.units || 0}
                   </td>
                 </tr>
@@ -404,16 +404,16 @@ export default function CurriculumTable({ onRegularImportSuccess }) {
 
             <tfoot className="bg-gray-50/80 border-t border-gray-200">
               <tr>
-                <td colSpan={2} className="py-4 px-5 text-right font-bold text-gray-500 text-xs tracking-widest uppercase">
+                <td colSpan={2} className="py-4 px-3 sm:px-5 text-right font-bold text-gray-500 text-xs tracking-widest uppercase">
                   Total
                 </td>
-                <td className="py-4 px-4 text-center text-gray-700 font-bold">
+                <td className="py-4 px-2 sm:px-4 text-center text-gray-700 font-bold">
                   {totals.lec}
                 </td>
-                <td className="py-4 px-4 text-center text-gray-700 font-bold">
+                <td className="py-4 px-2 sm:px-4 text-center text-gray-700 font-bold">
                   {totals.lab}
                 </td>
-                <td className="py-4 px-4 text-center text-[#2E522A] font-bold text-base">
+                <td className="py-4 px-2 sm:px-4 text-center text-[#2E522A] font-bold text-base">
                   {totals.units}
                 </td>
               </tr>
@@ -692,7 +692,7 @@ export default function CurriculumTable({ onRegularImportSuccess }) {
         <div className="flex-1">{renderIrregularList()}</div>
       ) : (
         <>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 w-full flex-1">
+          <div className="grid grid-cols-1 items-stretch gap-6 lg:gap-8 w-full flex-1 min-h-0 xl:grid-cols-2">
             {renderTable(0, "First Semester")}
             {renderTable(1, "Second Semester")}
           </div>
