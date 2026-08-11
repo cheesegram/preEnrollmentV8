@@ -8,6 +8,7 @@ import StatCard from "../components/ui/StatCard";
 import QuickActionCard from "../components/ui/QuickActionCard";
 import LoadingState from "../components/ui/LoadingState";
 import Panel from "../components/ui/Panel";
+import { buildScheduleMap } from "../lib/scheduleUtils";
 import {
     exportStudentsAsCsv,
     exportStudentsAsXlsx,
@@ -159,33 +160,31 @@ function Dashboard() {
 
     const fetchMasterSchedule = async () => {
         try {
-            // 1. Fetch the list of available schedules (metadata only)
             const schedulesRes = await api.get("/schedules");
             const availableSchedules = Array.isArray(schedulesRes.data) ? schedulesRes.data : [];
 
-            // 2. If there are schedules, get the ID of the most recent one
-            if (availableSchedules.length > 0) {
-                const latestScheduleId = availableSchedules[0]._id;
-
-                // 3. Fetch the full details of the latest schedule
-                const detailsRes = await api.get(`/schedules/${latestScheduleId}`);
-                const scheduleDetails = detailsRes.data;
-
-                // 4. Process the classes into a Map for quick lookup by section
-                const newScheduleMap = new Map();
-                scheduleDetails.classes.forEach(cls => {
-                    // The schedule generator uses full names like "BSIT-1A".
-                    const sectionKey = cls.sectionName;
-
-                    if (!newScheduleMap.has(sectionKey)) {
-                        newScheduleMap.set(sectionKey, []);
-                    }
-                    newScheduleMap.get(sectionKey).push(cls);
-                });
-                setScheduleMap(newScheduleMap);
+            if (availableSchedules.length === 0) {
+                setScheduleMap(new Map());
+                return;
             }
+
+            const scheduleDetailResults = await Promise.allSettled(
+                availableSchedules.map(async (schedule) => {
+                    if (!schedule?._id) return null;
+
+                    const detailsRes = await api.get(`/schedules/${schedule._id}`);
+                    return detailsRes.data;
+                })
+            );
+
+            const scheduleDetails = scheduleDetailResults
+                .map((result) => (result.status === "fulfilled" ? result.value : null))
+                .filter(Boolean);
+
+            setScheduleMap(buildScheduleMap(scheduleDetails));
         } catch (error) {
             console.error("Error fetching master schedule", error);
+            setScheduleMap(new Map());
         }
     };
 

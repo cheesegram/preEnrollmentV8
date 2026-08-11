@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import api from "../lib/axios";
+import { buildStudentScheduleKeys, formatScheduleTimeRange } from "../lib/scheduleUtils";
 import Pagination from "./ui/Pagination";
 
 const FIELD_LABELS = {
@@ -150,15 +151,6 @@ function formatDetailValue(key, value) {
   return String(value);
 }
 
-const minutesToTime = (minutes) => {
-  if (minutes === null || isNaN(minutes)) return 'N/A';
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
-  return `${String(formattedHours).padStart(2, '0')}:${String(mins).padStart(2, '0')} ${ampm}`;
-};
-
 function getDetailEntries(student) {
   if (!student) return [];
 
@@ -250,29 +242,24 @@ function StudentsTable({
     // 
     try {
       if (view === "schedule") {
-        const studentYearRaw = String(student?.year || '').trim();
-        const studentSection = String(student?.section || '').trim();
-        const studentYearNumeric = studentYearRaw.match(/\d+/)?.[0]; // "1st" -> "1"
-         
-        console.log(`[StudentsTable] Student Data: student.year=${student?.year}, student.section=${student?.section}`);
-        console.log(`[StudentsTable] Normalized Student Data: studentYearRaw='${studentYearRaw}', studentSection='${studentSection}', studentYearNumeric='${studentYearNumeric}'`);
- 
-        if (!scheduleMap || !studentYearNumeric || !studentSection || scheduleMap.size === 0) {
+        const scheduleKeys = buildStudentScheduleKeys(student);
+
+        if (!scheduleMap || scheduleMap.size === 0 || scheduleKeys.length === 0) {
           setSubjectError("Schedule data is not available yet.");
           console.log("[StudentsTable] Schedule data not ready or map is empty.");
           return; 
         }
-        const lookupKey = `${studentYearNumeric}${studentSection}`;
-        console.log(`[StudentsTable] Generated lookupKey for student: '${lookupKey}'`);
-        const scheduleForSection = scheduleMap.get(lookupKey);
-        console.log(`[StudentsTable] Schedule found in map for key '${lookupKey}': ${!!scheduleForSection}`);
-        if (!scheduleForSection || scheduleForSection.length === 0) {
-          setSubjectError(`No schedule found for Year ${studentYearRaw}, Section ${studentSection}. (Lookup key: '${lookupKey}')`);
-          console.log(`[StudentsTable] No schedule found for lookupKey='${lookupKey}'.`);
+        const lookupKey = scheduleKeys.find((key) => scheduleMap.has(key));
+        const scheduleForStudent = lookupKey ? scheduleMap.get(lookupKey) : null;
+        console.log(`[StudentsTable] Schedule lookup keys: ${scheduleKeys.join(", ")}`);
+        console.log(`[StudentsTable] Schedule found in map for key '${lookupKey}': ${!!scheduleForStudent}`);
+        if (!scheduleForStudent || scheduleForStudent.length === 0) {
+          setSubjectError(`No schedule found for this student's section, year, and semester.`);
+          console.log(`[StudentsTable] No schedule found for any lookup key: ${scheduleKeys.join(", ")}.`);
           return;
         }
-       
-        setSelectedSubjectSubjects(scheduleForSection);
+
+        setSelectedSubjectSubjects(scheduleForStudent);
         return;
       }
 
@@ -624,11 +611,11 @@ function StudentsTable({
                         {selectedSubjectView === "schedule" ? (
                           selectedSubjectSubjects.map((cls, index) => (
                             <tr key={index} className="hover:bg-gray-50/80">
-                              <td className="px-4 py-3 font-medium text-gray-800">{cls.subjectCode}</td>
+                              <td className="px-4 py-3 font-medium text-gray-800">{cls.subjectCode ?? cls.subject_code ?? "-"}</td>
                               <td className="px-4 py-3 text-gray-700">{cls.day}</td>
-                              <td className="px-4 py-3 text-gray-700">{`${minutesToTime(cls.startTime)} - ${minutesToTime(cls.endTime)}`}</td>
-                              <td className="px-4 py-3 text-gray-700">{cls.roomName}</td>
-                              <td className="px-4 py-3 text-gray-700">{cls.profName}</td>
+                              <td className="px-4 py-3 text-gray-700">{formatScheduleTimeRange(cls.startTime, cls.endTime)}</td>
+                              <td className="px-4 py-3 text-gray-700">{cls.roomName ?? cls.room_name ?? "-"}</td>
+                              <td className="px-4 py-3 text-gray-700">{cls.progName ?? cls.profName ?? "-"}</td>
                             </tr>
                           ))
                         ) : (

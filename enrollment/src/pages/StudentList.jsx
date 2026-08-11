@@ -6,6 +6,7 @@ import PageHeader from "../components/ui/PageHeader";
 import Panel from "../components/ui/Panel";
 import SearchInput from "../components/ui/SearchInput";
 import api from "../lib/axios"; 
+import { buildScheduleMap } from "../lib/scheduleUtils";
 
 const YEAR_OPTIONS = ["All Year", "First Year", "Second Year", "Third Year", "Fourth Year"];
 const STATUS_OPTIONS = ["To Be Admitted", "All Registered", "Block", "Irregular"];
@@ -163,28 +164,31 @@ function StudentList() {
   useEffect(() => {
     const fetchMasterSchedule = async () => {
       try {
-        // fetch the list of available schedules (metadata)
         const schedulesRes = await api.get("/schedules");
         const availableSchedules = Array.isArray(schedulesRes.data) ? schedulesRes.data : [];
 
-        // get the ID of the recent sched
-        if (availableSchedules.length > 0) {
-          const latestScheduleId = availableSchedules[0]._id;
-
-          // fetch the full details of the latest sched
-          const detailsRes = await api.get(`/schedules/${latestScheduleId}`);
-          const scheduleDetails = detailsRes.data;
-
-          // process the classes into a Map for quick lookup by section
-          const newScheduleMap = new Map();
-          scheduleDetails.classes.forEach(cls => {
-            newScheduleMap.set(cls.sectionName, newScheduleMap.get(cls.sectionName) || []);
-            newScheduleMap.get(cls.sectionName).push(cls);
-          });
-          setScheduleMap(newScheduleMap);
+        if (availableSchedules.length === 0) {
+          setScheduleMap(new Map());
+          return;
         }
+
+        const scheduleDetailResults = await Promise.allSettled(
+          availableSchedules.map(async (schedule) => {
+            if (!schedule?._id) return null;
+
+            const detailsRes = await api.get(`/schedules/${schedule._id}`);
+            return detailsRes.data;
+          })
+        );
+
+        const scheduleDetails = scheduleDetailResults
+          .map((result) => (result.status === "fulfilled" ? result.value : null))
+          .filter(Boolean);
+
+        setScheduleMap(buildScheduleMap(scheduleDetails));
       } catch (error) {
         console.error("Error fetching master schedule for StudentList:", error);
+        setScheduleMap(new Map());
       }
     };
     fetchMasterSchedule();
